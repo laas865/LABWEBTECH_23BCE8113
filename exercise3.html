@@ -1,0 +1,56 @@
+<form id="contactForm">
+  <div>
+    <label>Name:</label>
+    <input type="text" id="name" required>
+  </div>
+  
+  <div>
+    <label>Phone Number:</label>
+    <input type="tel" id="phone" placeholder="1234567890" required>
+  </div>
+
+  <div>
+    <label>Email:</label>
+    <input type="email" id="email" required>
+  </div>
+
+  <div>
+    <label>Subject:</label>
+    <input type="text" id="subject">
+  </div>
+
+  <div>
+    <label>Message:</label>
+    <textarea id="message"></textarea>
+  </div>
+
+  <button type="submit">Submit</button>
+  <p id="error" style="color:red; font-weight:bold;"></p>
+</form>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const errorMsg = document.getElementById('error');
+  errorMsg.innerText = "";
+
+  try {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (name === "") throw "Name field cannot be empty.";
+    if (name.length < 2) throw "Name is too short.";
+    if (!/^\d+$/.test(phone)) throw "Phone number must contain only digits.";
+    if (phone.length !== 10) throw "Phone number must be exactly 10 digits.";
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) throw "Please enter a valid email address.";
+
+    alert("Success! Data is valid.");
+    this.reset();
+
+  } catch (err) {
+    errorMsg.innerText = "Validation Error: " + err;
+  } finally {
+    console.log("Form validation process executed.");
+  }
+});
+</script>
