@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium User Management</title>
+    <link rel="stylesheet" href="e4style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="dashboard">
+        <div class="sidebar">
+            <h2>Registration</h2>
+            <form id="userForm">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userName" placeholder="John Doe" required>
+                </div>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="userEmail" placeholder="john@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="number" id="userMobile" placeholder="10-digit number" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="userPass" placeholder="Min 6 characters" required>
+                </div>
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h2>User Directory</h2>
+                <button id="clearAll" class="btn-outline">Clear All Data</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>User Profile</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="e4script.js"></script>
+</body>
+</html>
+</html>

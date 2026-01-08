@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5 Multimedia</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
+        .section { 
+            margin: 20px auto; max-width: 600px; background: white; 
+            padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        video { width: 100%; border-radius: 5px; }
+        .controls { margin: 10px 0; display: flex; justify-content: center; gap: 15px; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <h2>Audio Player</h2>
+    <div class="section">
+        <audio id="myAudio" controls>
+            <source src="your-audio.mp3" type="audio/mpeg">
+        </audio>
+        <div class="controls">
+            <label>Volume:</label>
+            <input type="range" id="audioVol" min="0" max="1" step="0.1" value="1">
+        </div>
+        <p>Current Time: <span id="audioTime">0</span>s</p>
+    </div>
+
+    <h2>Video Player</h2>
+    <div class="section">
+        <video id="myVideo" controls>
+            <source src="your-video.mp4" type="video/mp4">
+        </video>
+        <div class="controls">
+            <label>Volume:</label>
+            <input type="range" id="videoVol" min="0" max="1" step="0.1" value="1">
+            <label>Speed:</label>
+            <select id="videoSpeed">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+            </select>
+        </div>
+        <p>Current Time: <span id="videoTime">0</span>s</p>
+    </div>
+
+    <script>
+        const audio = document.getElementById('myAudio');
+        const video = document.getElementById('myVideo');
+
+        document.getElementById('audioVol').oninput = (e) => { audio.volume = e.target.value; };
+        document.getElementById('videoVol').oninput = (e) => { video.volume = e.target.value; };
+
+        document.getElementById('videoSpeed').onchange = (e) => { video.playbackRate = e.target.value; };
+
+        audio.ontimeupdate = () => { document.getElementById('audioTime').innerText = Math.floor(audio.currentTime); };
+        video.ontimeupdate = () => { document.getElementById('videoTime').innerText = Math.floor(video.currentTime); };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Task Manager</title>
+    <link rel="stylesheet" href="e3style.css">
+</head>
+<body>
+
+    <div class="header">
+        <h1>Task Board</h1>
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="What needs to be done?">
+            <button onclick="addTask()">Add Task</button>
+        </div>
+    </div>
+
+    <div class="board">
+        <div class="column" id="todo" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header todo-head">To Do</div>
+            <div class="task-list"></div>
+        </div>
+
+        <div class="column" id="inprogress" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header progress-head">In Progress</div>
+            <div class="task-list"></div>
+        </div>
+
+        <div class="column" id="completed" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="column-header done-head">Completed</div>
+            <div class="task-list"></div>
+        </div>
+    </div>
+
+    <script src="e3script.js"></script>
+</body>
+</html>

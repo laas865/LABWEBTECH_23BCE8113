@@ -1,0 +1,98 @@
+:root {
+    --bg: #f8f9fa;
+    --todo: #007bff;
+    --progress: #ffc107;
+    --done: #28a745;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+input {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover { background-color: #555; }
+
+.board {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.column {
+    background-color: #ebedf0;
+    width: 320px;
+    min-height: 500px;
+    border-radius: 8px;
+    padding-bottom: 20px;
+}
+
+.column-header {
+    padding: 15px;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.todo-head { background-color: var(--todo); }
+.progress-head { background-color: var(--progress); }
+.done-head { background-color: var(--done); }
+
+.task-list {
+    padding: 10px;
+    min-height: 400px;
+}
+
+.task-card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    cursor: grab;
+    transition: transform 0.2s;
+}
+
+.task-card:active { cursor: grabbing; transform: scale(0.98); }
+
+.task-card strong { display: block; margin-bottom: 5px; font-size: 1.1em; }
+.task-card small { color: #888; }
+
+/* Special color for completed column tasks */
+#completed .task-card {
+    background-color: #d4edda;
+    border-left: 5px solid var(--done);
+}
