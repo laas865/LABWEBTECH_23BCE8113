@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Monitor</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #38bdf8; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: var(--text); padding: 20px; display: flex; gap: 20px; }
+        
+        .monitor-area { flex: 1; background: var(--card); padding: 20px; border-radius: 12px; border: 2px dashed #475569; }
+        .log-panel { width: 400px; background: #000; padding: 15px; border-radius: 8px; height: 80vh; display: flex; flex-direction: column; }
+        
+        #logContainer { flex: 1; overflow-y: auto; font-size: 0.85rem; color: #10b981; margin-bottom: 10px; }
+        .log-entry { border-bottom: 1px solid #334155; padding: 4px 0; }
+        
+        .controls { display: flex; gap: 10px; margin-top: 10px; }
+        button { padding: 8px 12px; cursor: pointer; border-radius: 4px; border: none; font-weight: bold; }
+        .btn-reset { background: #ef4444; color: white; }
+        .btn-export { background: var(--accent); color: white; }
+        
+        .warning { color: #facc15; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        input { padding: 10px; width: 100%; box-sizing: border-box; margin-top: 10px; background: #334155; color: white; border: 1px solid #475569; }
+    </style>
+</head>
+<body id="root">
+
+    <div class="monitor-area" id="captureZone">
+        <h2>Capture Zone</h2>
+        <p>Interact with this area to generate logs.</p>
+        <input type="text" id="testInput" placeholder="Type something or focus here...">
+        <div style="margin-top: 20px; padding: 20px; background: #334155; text-align: center;">
+            <button id="clickBait">Click Me Rapidly</button>
+        </div>
+        <div id="alertBox"></div>
+    </div>
+
+    <div class="log-panel">
+        <h3>Activity Log</h3>
+        <div id="logContainer"></div>
+        <div class="controls">
+            <button class="btn-reset" onclick="resetLogs()">Reset</button>
+            <button class="btn-export" onclick="exportLogs()">Export TXT</button>
+        </div>
+    </div>
+
+<script>
+    const logs = [];
+    const logContainer = document.getElementById('logContainer');
+    const alertBox = document.getElementById('alertBox');
+    let clickCounter = 0;
+    let clickTimer;
+
+    document.body.addEventListener('click', (e) => {
+        logActivity('Capture Phase', `Click on ${e.target.tagName}`);
+    }, true);
+
+    const captureZone = document.getElementById('captureZone');
+    
+    captureZone.addEventListener('click', (e) => {
+        logActivity('Click', `Target: ${e.target.id || e.target.tagName}`);
+        handleSuspiciousClicks();
+    });
+
+    captureZone.addEventListener('keydown', (e) => {
+        logActivity('Keydown', `Key: ${e.key}`);
+    });
+
+    document.getElementById('testInput').addEventListener('focus', () => {
+        logActivity('Focus', 'Input field focused');
+    });
+
+    document.getElementById('testInput').addEventListener('blur', () => {
+        logActivity('Blur', 'Input field lost focus');
+    });
+    function logActivity(type, detail) {
+        const entry = {
+            timestamp: new Date().toLocaleTimeString(),
+            type: type,
+            detail: detail
+        };
+        logs.push(entry);
+        
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `[${entry.timestamp}] <b>${entry.type}</b>: ${entry.detail}`;
+        logContainer.prepend(div);
+    }
+
+    function handleSuspiciousClicks() {
+        clickCounter++;
+        clearTimeout(clickTimer);
+        
+        clickTimer = setTimeout(() => { clickCounter = 0; }, 1000);
+
+        if (clickCounter > 5) {
+            alertBox.innerHTML = `<p class="warning">⚠️ SUSPICIOUS ACTIVITY: Rapid clicking detected!</p>`;
+            logActivity('ALERT', 'Threshold exceeded: Too many clicks');
+        } else {
+            alertBox.innerHTML = "";
+        }
+    }
+
+    function resetLogs() {
+        logs.length = 0;
+        logContainer.innerHTML = "";
+        alertBox.innerHTML = "";
+        alert("Logs cleared.");
+    }
+
+    function exportLogs() {
+        if (logs.length === 0) return alert("No logs to export.");
+        
+        const content = logs.map(l => `${l.timestamp} | ${l.type} | ${l.detail}`).join('\n');
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'activity_log.txt';
+        a.click();
+    }
+</script>
+</body>
+</html>

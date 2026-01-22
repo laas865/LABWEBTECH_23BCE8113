@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Engine</title>
+    <style>
+        :root { --primary: #6366f1; --success: #22c55e; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px; }
+        
+        .workflow-container { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+       
+        .progress-container { margin-bottom: 30px; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+        #progressBar { height: 100%; width: 25%; background: var(--primary); transition: width 0.3s ease; }
+        
+        .stage { display: none; }
+        .stage.active { display: block; animation: fadeIn 0.4s; }
+        
+        h3 { margin-bottom: 20px; color: #1e293b; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        
+        .error { color: #ef4444; font-size: 0.8em; margin-top: 5px; display: none; }
+        input.invalid { border-color: #ef4444; background: #fff1f2; }
+
+        .controls { display: flex; justify-content: space-between; margin-top: 25px; }
+        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-next { background: var(--primary); color: white; }
+        .btn-prev { background: #94a3b8; color: white; }
+        .btn-submit { background: var(--success); color: white; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="workflow-container">
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+
+    <form id="workflowForm">
+        <div class="stage active" data-stage="1">
+            <h3>Account Details</h3>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" required minlength="4">
+                <div class="error">Min 4 characters required.</div>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required>
+                <div class="error">Valid email required.</div>
+            </div>
+        </div>
+
+        <div class="stage" data-stage="2">
+            <h3>Personal Information</h3>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="fullname" required>
+                <div class="error">Full name is required.</div>
+            </div>
+            <div class="input-group">
+                <label>Age</label>
+                <input type="number" id="age" min="18" max="100" required>
+                <div class="error">Must be between 18 and 100.</div>
+            </div>
+        </div>
+
+        <div class="stage" data-stage="3">
+            <h3>Professional Info</h3>
+            <div class="input-group">
+                <label>Occupation</label>
+                <select id="occupation" required>
+                    <option value="">Select...</option>
+                    <option value="dev">Developer</option>
+                    <option value="design">Designer</option>
+                    <option value="other">Other</option>
+                </select>
+                <div class="error">Please select an option.</div>
+            </div>
+        </div>
+
+        <div class="stage" data-stage="4">
+            <h3>Review & Submit</h3>
+            <p>Please confirm all details are correct.</p>
+            <div id="reviewData" style="font-size: 0.9em; background: #f1f5f9; padding: 15px; border-radius: 8px;"></div>
+        </div>
+
+        <div class="controls">
+            <button type="button" class="btn-prev" id="prevBtn" disabled>Back</button>
+            <button type="button" class="btn-next" id="nextBtn">Next</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let currentStage = 1;
+    const totalStages = 4;
+    const formData = {}; 
+
+    const stages = document.querySelectorAll('.stage');
+    const progressBar = document.getElementById('progressBar');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const reviewBox = document.getElementById('reviewData');
+
+    function updateUI() {
+        
+        stages.forEach(s => s.classList.remove('active'));
+        document.querySelector(`.stage[data-stage="${currentStage}"]`).classList.add('active');
+
+        progressBar.style.width = `${(currentStage / totalStages) * 100}%`;
+
+        prevBtn.disabled = currentStage === 1;
+        if (currentStage === totalStages) {
+            nextBtn.textContent = "Submit";
+            nextBtn.className = "btn-submit";
+            showReview();
+        } else {
+            nextBtn.textContent = "Next";
+            nextBtn.className = "btn-next";
+        }
+    }
+
+    function validateCurrentStage() {
+        const activeStageEl = document.querySelector(`.stage[data-stage="${currentStage}"]`);
+        const inputs = activeStageEl.querySelectorAll('input, select');
+        let isStageValid = true;
+
+        inputs.forEach(input => {
+            const isValid = input.checkValidity();
+            const errorMsg = input.nextElementSibling;
+            
+            if (!isValid) {
+                input.classList.add('invalid');
+                if (errorMsg) errorMsg.style.display = 'block';
+                isStageValid = false;
+            } else {
+                input.classList.remove('invalid');
+                if (errorMsg) errorMsg.style.display = 'none';
+                // Store data
+                formData[input.id] = input.value;
+            }
+        });
+
+        return isStageValid;
+    }
+
+    function showReview() {
+        reviewBox.innerHTML = Object.entries(formData)
+            .map(([key, val]) => `<div><strong>${key.toUpperCase()}:</strong> ${val}</div>`)
+            .join('');
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (validateCurrentStage()) {
+            if (currentStage < totalStages) {
+                currentStage++;
+                updateUI();
+            } else {
+                alert("Form Submitted Successfully!\n" + JSON.stringify(formData, null, 2));
+            }
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStage > 1) {
+            currentStage--;
+            updateUI();
+        }
+    });
+
+    updateUI();
+</script>
+</body>
+</html>

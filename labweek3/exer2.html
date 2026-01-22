@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Smart Cart</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --accent: #10b981;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex; 
+            justify-content: center;
+            gap: 30px; 
+            padding: 40px;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            gap: 25px;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .section { 
+            background: var(--card);
+            padding: 25px; 
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex: 1;
+        }
+
+        h3 { border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-top: 0; }
+
+        .item { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .item:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .item-info b { display: block; font-size: 1.1em; }
+        .item-info span { color: #64748b; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        button { 
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-add { background: var(--primary); color: white; padding: 8px 16px; }
+        .btn-add:hover { background: #4338ca; }
+
+        .qty-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-qty { background: #f1f5f9; width: 30px; height: 30px; }
+        .btn-qty:hover { background: #e2e8f0; }
+
+        .btn-remove { background: #fee2e2; color: #ef4444; padding: 8px 12px; font-size: 0.8em; margin-left: 10px; }
+
+        .coupon-box { margin-top: 20px; display: flex; gap: 8px; }
+        input[type="text"] { 
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px;
+            outline-color: var(--primary);
+        }
+
+        .summary-card { 
+            margin-top: 20px; 
+            background: #f8fafc; 
+            padding: 15px; 
+            border-radius: 8px; 
+        }
+
+        .discount-badge { 
+            background: #d1fae5; 
+            color: #065f46; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 0.8em; 
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        #total { font-size: 1.5em; color: var(--primary); margin-top: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="section">
+        <h3>Available Products</h3>
+        <div id="productList"></div>
+    </div>
+
+    <div class="section">
+        <h3>Shopping Cart</h3>
+        <div id="cartList"></div>
+        
+        <div class="coupon-box">
+            <input type="text" id="coupon" placeholder="Code: SAVE10-TECH">
+            <button class="btn-add" onclick="applyCoupon()">Apply</button>
+        </div>
+        
+        <div id="summary" class="summary-card"></div>
+    </div>
+</div>
+
+<script>
+    const products = [
+        { id: 1, name: "Pro Laptop", price: 1200, category: "Tech" },
+        { id: 2, name: "Wireless Headphones", price: 250, category: "Tech" },
+        { id: 3, name: "Mechanical Keyboard", price: 150, category: "Tech" },
+        { id: 4, name: "Organic Apples (kg)", price: 5, category: "Food" }
+    ];
+
+    let cart = [];
+    let couponDiscount = 0;
+
+    function render() {
+        // Products List
+        document.getElementById('productList').innerHTML = products.map(p => `
+            <div class="item">
+                <div class="item-info">
+                    <b>${p.name}</b>
+                    <span>${p.category} • $${p.price}</span>
+                </div>
+                <button class="btn-add" onclick="addToCart(${p.id})">Add to Cart</button>
+            </div>
+        `).join('');
+
+        // Cart List
+        const cartDiv = document.getElementById('cartList');
+        let subtotal = 0;
+        
+        if (cart.length === 0) {
+            cartDiv.innerHTML = "<p style='color:#94a3b8'>Your cart is empty.</p>";
+        } else {
+            cartDiv.innerHTML = cart.map((item, index) => {
+                let itemTotal = item.price * item.qty;
+                let hasBulk = false;
+                if (item.qty > 5) {
+                    itemTotal *= 0.9;
+                    hasBulk = true;
+                }
+                subtotal += itemTotal;
+
+                return `
+                    <div class="item">
+                        <div class="item-info">
+                            <b>${item.name}</b>
+                            ${hasBulk ? '<span class="discount-badge">Bulk 10% Off</span>' : ''}
+                            <div>$${itemTotal.toFixed(2)}</div>
+                        </div>
+                        <div class="qty-controls">
+                            <button class="btn-qty" onclick="updateQty(${index}, -1)">-</button>
+                            <span>${item.qty}</span>
+                            <button class="btn-qty" onclick="updateQty(${index}, 1)">+</button>
+                            <button class="btn-remove" onclick="removeItem(${index})">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        const hour = new Date().getHours();
+        const isHappyHour = hour >= 14 && hour <= 16;
+        if (isHappyHour) subtotal *= 0.95;
+
+        const finalTotal = subtotal * (1 - couponDiscount);
+
+        document.getElementById('summary').innerHTML = `
+            <div style="display:flex; justify-content:space-between; color:#64748b">
+                <span>Subtotal:</span> <span>$${subtotal.toFixed(2)}</span>
+            </div>
+            ${isHappyHour ? '<div class="discount-badge">Happy Hour 5% Applied</div>' : ''}
+            ${couponDiscount > 0 ? `<div class="discount-badge">Coupon ${(couponDiscount*100).toFixed(0)}% Applied</div>` : ''}
+            <div style="border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 10px; display:flex; justify-content:space-between; align-items:center">
+                <b>Total:</b>
+                <b id="total">$${finalTotal.toFixed(2)}</b>
+            </div>
+        `;
+    }
+
+    function addToCart(id) {
+        const item = products.find(p => p.id === id);
+        const inCart = cart.find(c => c.id === id);
+        if (inCart) inCart.qty++;
+        else cart.push({ ...item, qty: 1 });
+        render();
+    }
+
+    function updateQty(index, change) {
+        cart[index].qty += change;
+        if (cart[index].qty < 1) removeItem(index);
+        render();
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        render();
+    }
+
+    function applyCoupon() {
+        const code = document.getElementById('coupon').value.trim().toUpperCase();
+        if (code.startsWith("SAVE") && code.includes("-")) {
+            const parts = code.split("-");
+            const val = parseInt(parts[0].replace("SAVE", ""));
+            const cat = parts[1];
+            
+            if (!isNaN(val) && cart.some(i => i.category.toUpperCase() === cat)) {
+                couponDiscount = val / 100;
+            } else {
+                alert("Coupon category doesn't match items in cart.");
+            }
+        } else {
+            alert("Format: SAVE[Percent]-[CATEGORY]");
+        }
+        render();
+    }
+
+    render();
+</script>
+</body>
+</html>

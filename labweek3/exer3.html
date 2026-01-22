@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Dynamic Survey Builder</title>
+    <style>
+        :root { --error: #ef4444; --primary: #2563eb; --border: #d1d5db; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f3f4f6; padding: 40px; color: #1f2937; }
+        .survey-card { max-width: 650px; margin: auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #111827; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; }
+        
+        .q-wrapper { margin-bottom: 24px; transition: all 0.3s ease; }
+        .q-label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.95rem; }
+        
+        input[type="text"], input[type="email"], input[type="date"], textarea { 
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem;
+        }
+        
+        textarea { height: 100px; resize: vertical; }
+        .options-group { display: flex; flex-direction: column; gap: 10px; background: #f9fafb; padding: 15px; border-radius: 8px; }
+        .hidden { display: none; }
+        
+        .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 6px; font-weight: 500; display: none; }
+        .invalid { border-color: var(--error) !important; background-color: #fffafb; }
+        
+        button { 
+            background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; 
+            cursor: pointer; font-weight: 700; width: 100%; font-size: 1rem; margin-top: 10px;
+        }
+        button:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+<div class="survey-card">
+    <h2>Customer Insights Survey</h2>
+    <form id="dynamicForm" novalidate></form>
+</div>
+
+<script>
+    const surveyData = [
+        { id: "name", type: "text", label: "Full Name", required: true, max: 25 },
+        { id: "email", type: "email", label: "Email Address", required: true },
+        { id: "visitDate", type: "date", label: "Date of Visit", required: true },
+        { id: "satisfaction", type: "radio", label: "Overall Satisfaction", options: ["Happy", "Neutral", "Sad"], required: true },
+        { id: "comments", type: "textarea", label: "What went wrong?", dependsOn: { qid: "satisfaction", value: "Sad" }, min: 10 },
+        { id: "features", type: "checkbox", label: "Favorite Features (Select 2+)", options: ["Speed", "UI Design", "Support", "Pricing"], minSelect: 2 }
+    ];
+
+    const form = document.getElementById('dynamicForm');
+
+    function buildSurvey() {
+        surveyData.forEach(q => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'q-wrapper';
+            wrapper.id = `wrapper-${q.id}`;
+            if (q.dependsOn) wrapper.classList.add('hidden');
+
+            wrapper.innerHTML = `<label class="q-label">${q.label}${q.required ? ' *' : ''}</label>`;
+
+            if (['text', 'email', 'date'].includes(q.type)) {
+                const input = document.createElement('input');
+                input.type = q.type;
+                input.id = q.id;
+                wrapper.appendChild(input);
+            } 
+            else if (q.type === 'textarea') {
+                const area = document.createElement('textarea');
+                area.id = q.id;
+                wrapper.appendChild(area);
+            }
+            else if (q.type === 'radio' || q.type === 'checkbox') {
+                const group = document.createElement('div');
+                group.className = 'options-group';
+                q.options.forEach(opt => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="${q.type}" name="${q.id}" value="${opt}"> ${opt}`;
+                    group.appendChild(label);
+                    
+                    if (q.dependsOn) {
+                        label.querySelector('input').addEventListener('change', (e) => handleLogic(e));
+                    }
+                });
+                wrapper.appendChild(group);
+            }
+
+            // Global logic listener for radio groups
+            if (q.type === 'radio') {
+                wrapper.addEventListener('change', (e) => {
+                    const targetLogic = surveyData.find(item => item.dependsOn?.qid === q.id);
+                    if (targetLogic) {
+                        const depWrapper = document.getElementById(`wrapper-${targetLogic.id}`);
+                        depWrapper.classList.toggle('hidden', e.target.value !== targetLogic.dependsOn.value);
+                    }
+                });
+            }
+
+            const error = document.createElement('div');
+            error.className = 'error-msg';
+            error.id = `err-${q.id}`;
+            wrapper.appendChild(error);
+            form.appendChild(wrapper);
+        });
+
+        const btn = document.createElement('button');
+        btn.type = "submit";
+        btn.textContent = "Submit Feedback";
+        form.appendChild(btn);
+    }
+
+    function validate() {
+        let isValid = true;
+        
+        surveyData.forEach(q => {
+            const wrapper = document.getElementById(`wrapper-${q.id}`);
+            if (wrapper.classList.contains('hidden')) return;
+
+            const errorDiv = document.getElementById(`err-${q.id}`);
+            const inputField = document.getElementById(q.id);
+            let errorText = "";
+
+            if (q.type === 'text' || q.type === 'textarea' || q.type === 'email') {
+                const val = inputField.value.trim();
+                if (q.required && !val) errorText = "This field is required.";
+                else if (q.max && val.length > q.max) errorText = `Maximum ${q.max} characters.`;
+                else if (q.min && val.length < q.min) errorText = `Please provide at least ${q.min} characters.`;
+                else if (q.type === 'email' && !/\S+@\S+\.\S+/.test(val)) errorText = "Enter a valid email.";
+                inputField.classList.toggle('invalid', !!errorText);
+            } 
+            else if (q.type === 'date') {
+                const selectedDate = new Date(inputField.value);
+                const today = new Date();
+                if (q.required && !inputField.value) errorText = "Please select a date.";
+                else if (selectedDate > today) errorText = "Date cannot be in the future.";
+                inputField.classList.toggle('invalid', !!errorText);
+            }
+            else if (q.type === 'radio') {
+                const checked = form.querySelector(`input[name="${q.id}"]:checked`);
+                if (q.required && !checked) errorText = "Please select an option.";
+            }
+            else if (q.type === 'checkbox') {
+                const checkedCount = form.querySelectorAll(`input[name="${q.id}"]:checked`).length;
+                if (checkedCount < q.minSelect) errorText = `Select at least ${q.minSelect} options.`;
+            }
+
+            if (errorText) {
+                errorDiv.textContent = errorText;
+                errorDiv.style.display = 'block';
+                isValid = false;
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+        return isValid;
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validate()) {
+            alert("Thank you! Your feedback has been submitted.");
+            form.reset();
+            document.querySelectorAll('.q-wrapper').forEach(w => {
+                const data = surveyData.find(d => `wrapper-${d.id}` === w.id);
+                if (data?.dependsOn) w.classList.add('hidden');
+            });
+        }
+    });
+
+    buildSurvey();
+</script>
+</body>
+</html>
