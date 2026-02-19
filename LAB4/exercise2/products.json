@@ -1,0 +1,28 @@
+{
+    "products": [{
+            "name": "iPhone 14",
+            "price": 79999,
+            "category": "Mobile"
+        },
+        {
+            "name": "Samsung Galaxy S23",
+            "price": 74999,
+            "category": "Mobile"
+        },
+        {
+            "name": "Dell Inspiron Laptop",
+            "price": 55999,
+            "category": "Laptop"
+        },
+        {
+            "name": "HP Pavilion Laptop",
+            "price": 62999,
+            "category": "Laptop"
+        },
+        {
+            "name": "Boat Rockerz Headphones",
+            "price": 1999,
+            "category": "Accessories"
+        }
+    ]
+}
