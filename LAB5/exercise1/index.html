@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Employee Management System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            padding: 20px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 22%;
+        }
+        
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .read {
+            background: #3498db;
+        }
+        
+        .create {
+            background: #2ecc71;
+        }
+        
+        .update {
+            background: #f39c12;
+        }
+        
+        .delete {
+            background: #e74c3c;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th {
+            background: #4facfe;
+            color: white;
+            padding: 10px;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .msg {
+            color: green;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Employee Management System</h1>
+
+        <div class="card">
+
+            <input id="id" placeholder="Employee ID">
+            <input id="name" placeholder="Name">
+            <input id="dept" placeholder="Department">
+            <input id="salary" placeholder="Salary">
+
+            <br>
+
+            <button class="read" onclick="loadEmployees()">Read</button>
+            <button class="create" onclick="addEmployee()">Create</button>
+            <button class="update" onclick="updateEmployee()">Update</button>
+            <button class="delete" onclick="deleteEmployee()">Delete</button>
+
+            <p id="msg" class="msg"></p>
+            <p id="error" class="error"></p>
+
+        </div>
+
+        <div class="card">
+
+            <table id="table">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Salary</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script>
+        let xmlDoc;
+
+        function loadEmployees() {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "employees.xml", true);
+
+            xhr.onload = function() {
+
+                if (xhr.status == 200) {
+                    xmlDoc = xhr.responseXML;
+                    display();
+                    showMsg("Employees loaded");
+                } else {
+                    showError("Error loading XML");
+                }
+
+            };
+
+            xhr.send();
+
+        }
+
+        function display() {
+
+            let table = document.getElementById("table");
+
+            table.innerHTML = `
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Department</th>
+<th>Salary</th>
+</tr>
+`;
+
+            let employees = xmlDoc.getElementsByTagName("employee");
+
+            for (let emp of employees) {
+
+                let row = table.insertRow();
+
+                row.insertCell(0).innerText =
+                    emp.getElementsByTagName("id")[0].textContent;
+
+                row.insertCell(1).innerText =
+                    emp.getElementsByTagName("name")[0].textContent;
+
+                row.insertCell(2).innerText =
+                    emp.getElementsByTagName("department")[0].textContent;
+
+                row.insertCell(3).innerText =
+                    emp.getElementsByTagName("salary")[0].textContent;
+
+            }
+
+        }
+
+        function addEmployee() {
+
+            let emp = xmlDoc.createElement("employee");
+
+            emp.appendChild(node("id", val("id")));
+            emp.appendChild(node("name", val("name")));
+            emp.appendChild(node("department", val("dept")));
+            emp.appendChild(node("salary", val("salary")));
+
+            xmlDoc.documentElement.appendChild(emp);
+
+            display();
+            showMsg("Employee added");
+
+        }
+
+        function updateEmployee() {
+
+            let id = val("id");
+            let employees = xmlDoc.getElementsByTagName("employee");
+            let found = false;
+
+            for (let emp of employees) {
+
+                if (emp.getElementsByTagName("id")[0].textContent == id) {
+
+                    emp.getElementsByTagName("department")[0].textContent = val("dept");
+                    emp.getElementsByTagName("salary")[0].textContent = val("salary");
+
+                    found = true;
+
+                }
+
+            }
+
+            found ? showMsg("Updated") : showError("Employee not found");
+            display();
+
+        }
+
+        function deleteEmployee() {
+
+            let id = val("id");
+            let employees = xmlDoc.getElementsByTagName("employee");
+            let found = false;
+
+            for (let emp of employees) {
+
+                if (emp.getElementsByTagName("id")[0].textContent == id) {
+
+                    xmlDoc.documentElement.removeChild(emp);
+                    found = true;
+                    break;
+
+                }
+
+            }
+
+            found ? showMsg("Deleted") : showError("Employee not found");
+            display();
+
+        }
+
+        function node(tag, value) {
+
+            let n = xmlDoc.createElement(tag);
+            n.appendChild(xmlDoc.createTextNode(value));
+            return n;
+
+        }
+
+        function val(id) {
+            return document.getElementById(id).value;
+        }
+
+        function showMsg(m) {
+            document.getElementById("msg").innerText = m;
+            document.getElementById("error").innerText = "";
+        }
+
+        function showError(m) {
+            document.getElementById("error").innerText = m;
+            document.getElementById("msg").innerText = "";
+        }
+    </script>
+
+</body>
+
+</html>
