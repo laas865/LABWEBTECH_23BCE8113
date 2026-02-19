@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        input {
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            padding: 8px 12px;
+            border: none;
+            background: #2ae4d2;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2ddfeb;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+        
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .weather-box {
+            margin-top: 15px;
+        }
+        
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Weather Dashboard</h2>
+
+        <input type="text" id="city" placeholder="Enter city name">
+        <br>
+        <button onclick="getWeather()">Search</button>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="weather-box" id="weather"></div>
+
+    </div>
+
+    <script>
+        const apiKey = "18e6f89d446f25708f8692da33aa8bc7";
+
+        let lastCity = "";
+        let lastData = null;
+
+        function getWeather() {
+
+            const city = document.getElementById("city").value.trim();
+            const weatherBox = document.getElementById("weather");
+            const loader = document.getElementById("loader");
+
+            if (city === "") return;
+
+            if (city.toLowerCase() === lastCity.toLowerCase()) {
+                displayWeather(lastData);
+                return;
+            }
+
+            loader.style.display = "block";
+            weatherBox.innerHTML = "";
+
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=Hyderabad&appid=18e6f89d446f25708f8692da33aa8bc7&units=metric
+`)
+
+            .then(res => {
+                if (!res.ok) {
+                    if (res.status === 404) throw new Error("City not found");
+                    else throw new Error("Server error");
+                }
+                return res.json();
+            })
+
+            .then(data => {
+
+                loader.style.display = "none";
+
+                lastCity = city;
+                lastData = data;
+
+                displayWeather(data);
+            })
+
+            .catch(err => {
+
+                loader.style.display = "none";
+
+                weatherBox.innerHTML =
+                    `<p class="error">${err.message}</p>`;
+            });
+        }
+
+        function displayWeather(data) {
+
+            const weatherBox = document.getElementById("weather");
+
+            const temp = data.main.temp;
+            const humidity = data.main.humidity;
+            const condition = data.weather[0].main;
+
+            weatherBox.innerHTML = `
+    <h3>${data.name}</h3>
+    <p><b>Temperature:</b> ${temp} °C</p>
+    <p><b>Humidity:</b> ${humidity}%</p>
+    <p><b>Condition:</b> ${condition}</p>
+  `;
+        }
+    </script>
+
+</body>
+
+</html>
