@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Management System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #89f7fe, #66a6ff);
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            text-align: center;
+        }
+        
+        input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        
+        button.delete {
+            background: red;
+        }
+        
+        button.edit {
+            background: orange;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        #message {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Student Management System</h2>
+
+        <form id="studentForm">
+            <input type="text" id="id" placeholder="Student ID" required>
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="text" id="dept" placeholder="Department" required>
+            <input type="number" id="marks" placeholder="Marks" required>
+            <button type="submit">Save Student</button>
+        </form>
+
+        <div id="message"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Marks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+        let students = [];
+        let editIndex = -1;
+
+        const tableBody = document.getElementById("studentTable");
+        const message = document.getElementById("message");
+
+        function fetchStudents() {
+            fetch("students.json")
+                .then(res => {
+                    if (!res.ok) throw new Error("404");
+                    return res.json();
+                })
+                .then(data => {
+                    students = data.students;
+                    displayStudents();
+                    showMessage("Students loaded successfully (200)", 200);
+                })
+                .catch(() => {
+                    showMessage("Error loading students (404)", 404);
+                });
+        }
+
+        function displayStudents() {
+            tableBody.innerHTML = "";
+            students.forEach((s, index) => {
+                const row = `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.name}</td>
+        <td>${s.department}</td>
+        <td>${s.marks}</td>
+        <td>
+          <button class="edit" onclick="editStudent(${index})">Edit</button>
+          <button class="delete" onclick="deleteStudent(${index})">Delete</button>
+        </td>
+      </tr>
+    `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        document.getElementById("studentForm")
+            .addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const student = {
+                    id: id.value,
+                    name: name.value,
+                    department: dept.value,
+                    marks: marks.value
+                };
+
+                if (editIndex === -1) {
+                    students.push(student);
+                    showMessage("Student added successfully (200)", 200);
+                } else {
+                    students[editIndex] = student;
+                    showMessage("Student updated successfully (200)", 200);
+                    editIndex = -1;
+                }
+
+                displayStudents();
+                this.reset();
+            });
+
+        function editStudent(index) {
+            const s = students[index];
+            id.value = s.id;
+            name.value = s.name;
+            dept.value = s.department;
+            marks.value = s.marks;
+            editIndex = index;
+        }
+
+        function deleteStudent(index) {
+            if (confirm("Delete this student?")) {
+                students.splice(index, 1);
+                displayStudents();
+                showMessage("Student deleted successfully (200)", 200);
+            }
+        }
+
+        function showMessage(msg, status) {
+            message.textContent = msg;
+            if (status === 200) message.style.color = "green";
+            else if (status === 404) message.style.color = "orange";
+            else message.style.color = "red";
+        }
+
+        fetchStudents();
+    </script>
+
+</body>
+
+</html>
