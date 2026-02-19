@@ -1,0 +1,24 @@
+{
+    "products": [{
+            "id": "P101",
+            "name": "Laptop",
+            "category": "Electronics",
+            "price": 60000,
+            "stock": 8
+        },
+        {
+            "id": "P102",
+            "name": "Headphones",
+            "category": "Electronics",
+            "price": 2000,
+            "stock": 15
+        },
+        {
+            "id": "P103",
+            "name": "Chair",
+            "category": "Furniture",
+            "price": 3500,
+            "stock": 3
+        }
+    ]
+}
