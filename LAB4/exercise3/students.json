@@ -1,0 +1,33 @@
+{
+    "students": [{
+            "id": "101",
+            "name": "Rahul",
+            "department": "CSE",
+            "marks": 85
+        },
+        {
+            "id": "102",
+            "name": "Anjali",
+            "department": "ECE",
+            "marks": 90
+        },
+        {
+            "id": "103",
+            "name": "Kiran",
+            "department": "EEE",
+            "marks": 78
+        },
+        {
+            "id": "104",
+            "name": "Sneha",
+            "department": "IT",
+            "marks": 88
+        },
+        {
+            "id": "105",
+            "name": "Arjun",
+            "department": "MECH",
+            "marks": 72
+        }
+    ]
+}
