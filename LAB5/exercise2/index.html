@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Library Book Tracker</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        
+        .card {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        input,
+        select {
+            padding: 10px;
+            margin: 5px;
+            width: 22%;
+        }
+        
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .load {
+            background: #3498db;
+        }
+        
+        .add {
+            background: #2ecc71;
+        }
+        
+        .update {
+            background: #f39c12;
+        }
+        
+        .delete {
+            background: #e74c3c;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .msg {
+            color: green;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Library Book Tracker</h1>
+
+        <div class="card">
+
+            <input id="id" placeholder="Book ID">
+            <input id="title" placeholder="Title">
+            <input id="author" placeholder="Author">
+
+            <select id="status">
+<option value="">Availability</option>
+<option>Available</option>
+<option>Issued</option>
+</select>
+
+            <br>
+
+            <button class="load" onclick="loadBooks()">Load Books</button>
+            <button class="add" onclick="addBook()">Add</button>
+            <button class="update" onclick="updateBook()">Update Status</button>
+            <button class="delete" onclick="deleteBook()">Delete</button>
+
+            <p id="msg" class="msg"></p>
+            <p id="error" class="error"></p>
+
+        </div>
+
+        <div class="card">
+
+            <table id="table">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Status</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script>
+        let xmlDoc;
+
+        function loadBooks() {
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "books.xml", true);
+
+            xhr.onload = function() {
+
+                if (xhr.status == 200) {
+                    xmlDoc = xhr.responseXML;
+                    display();
+                    msg("Books loaded");
+                } else err("Error loading XML");
+
+            };
+
+            xhr.send();
+
+        }
+
+        function display() {
+
+            let table = document.getElementById("table");
+
+            table.innerHTML = `
+<tr>
+<th>ID</th>
+<th>Title</th>
+<th>Author</th>
+<th>Status</th>
+</tr>
+`;
+
+            let books = xmlDoc.getElementsByTagName("book");
+
+            for (let b of books) {
+
+                let row = table.insertRow();
+
+                row.insertCell(0).innerText =
+                    b.getElementsByTagName("id")[0].textContent;
+
+                row.insertCell(1).innerText =
+                    b.getElementsByTagName("title")[0].textContent;
+
+                row.insertCell(2).innerText =
+                    b.getElementsByTagName("author")[0].textContent;
+
+                row.insertCell(3).innerText =
+                    b.getElementsByTagName("status")[0].textContent;
+
+            }
+
+        }
+
+        function addBook() {
+
+            if (!validate()) return;
+
+            let book = xmlDoc.createElement("book");
+
+            book.appendChild(node("id", val("id")));
+            book.appendChild(node("title", val("title")));
+            book.appendChild(node("author", val("author")));
+            book.appendChild(node("status", val("status")));
+
+            xmlDoc.documentElement.appendChild(book);
+
+            display();
+            msg("Book added");
+
+        }
+
+        function updateBook() {
+
+            let id = val("id");
+            let books = xmlDoc.getElementsByTagName("book");
+            let found = false;
+
+            for (let b of books) {
+
+                if (b.getElementsByTagName("id")[0].textContent == id) {
+
+                    b.getElementsByTagName("status")[0].textContent = val("status");
+                    found = true;
+
+                }
+
+            }
+
+            found ? msg("Status updated") : err("Book not found");
+            display();
+
+        }
+
+        function deleteBook() {
+
+            let id = val("id");
+            let books = xmlDoc.getElementsByTagName("book");
+            let found = false;
+
+            for (let b of books) {
+
+                if (b.getElementsByTagName("id")[0].textContent == id) {
+
+                    xmlDoc.documentElement.removeChild(b);
+                    found = true;
+                    break;
+
+                }
+
+            }
+
+            found ? msg("Book deleted") : err("Book not found");
+            display();
+
+        }
+
+        function validate() {
+
+            if (!val("id") || !val("title") || !val("author") || !val("status")) {
+                err("All fields required");
+                return false;
+            }
+
+            return true;
+
+        }
+
+        function node(tag, value) {
+
+            let n = xmlDoc.createElement(tag);
+            n.appendChild(xmlDoc.createTextNode(value));
+            return n;
+
+        }
+
+        function val(id) {
+            return document.getElementById(id).value;
+        }
+
+        function msg(t) {
+            document.getElementById("msg").innerText = t;
+            document.getElementById("error").innerText = "";
+        }
+
+        function err(t) {
+            document.getElementById("error").innerText = t;
+            document.getElementById("msg").innerText = "";
+        }
+    </script>
+
+</body>
+
+</html>
