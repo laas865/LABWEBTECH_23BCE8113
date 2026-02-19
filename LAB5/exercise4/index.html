@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Product Inventory System</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Segoe UI;
+            background: linear-gradient(120deg, #e64348, #d28d79, #fad0c4, #fbc2eb, #a18cd1);
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+        
+        input {
+            padding: 12px;
+            margin: 6px;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            width: 18%;
+        }
+        
+        button {
+            padding: 10px 16px;
+            margin: 6px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .add {
+            background: #00f5a0;
+        }
+        
+        .update {
+            background: #ffb347;
+        }
+        
+        .delete {
+            background: #ff4b5c;
+        }
+        
+        .search {
+            background: #4facfe;
+        }
+        
+        .load {
+            background: #6a11cb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #7797e3;
+            color: white;
+            padding: 12px;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .low {
+            background: #ffb3b3;
+            font-weight: bold;
+        }
+        
+        .totalBox {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .msg {
+            color: #00ffae;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #ff4b5c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Product Inventory System</h1>
+
+        <div class="card">
+
+            <input id="id" placeholder="Product ID">
+            <input id="name" placeholder="Name">
+            <input id="category" placeholder="Category">
+            <input id="price" placeholder="Price">
+            <input id="stock" placeholder="Stock">
+
+            <br>
+
+            <button class="load" onclick="load()">Load</button>
+            <button class="add" onclick="add()">Add</button>
+            <button class="update" onclick="update()">Edit</button>
+            <button class="delete" onclick="del()">Delete</button>
+
+            <input id="searchCat" placeholder="Search Category">
+            <button class="search" onclick="search()">Search</button>
+
+            <p id="msg" class="msg"></p>
+            <p id="error" class="error"></p>
+
+            <div class="totalBox">
+                Total Inventory Value: ₹ <span id="total">0</span>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <table id="table">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script>
+        let data = [];
+
+        function load() {
+
+            fetch("inventory.json")
+                .then(r => r.json())
+                .then(j => {
+                    data = j.products;
+                    display(data);
+                    msg("Inventory loaded");
+                })
+                .catch(() => err("JSON Load Error"));
+
+        }
+
+        function display(arr) {
+
+            let table = document.getElementById("table");
+
+            table.innerHTML = `
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Category</th>
+<th>Price</th>
+<th>Stock</th>
+</tr>
+`;
+
+            let total = 0;
+
+            arr.forEach(p => {
+
+                let row = table.insertRow();
+
+                if (p.stock < 5) row.classList.add("low");
+
+                row.insertCell(0).innerText = p.id;
+                row.insertCell(1).innerText = p.name;
+                row.insertCell(2).innerText = p.category;
+                row.insertCell(3).innerText = p.price;
+                row.insertCell(4).innerText = p.stock;
+
+                total += p.price * p.stock;
+
+            });
+
+            document.getElementById("total").innerText = total;
+
+        }
+
+        function add() {
+
+            if (!val("id") || !val("name") || !val("category") || !val("price") || !val("stock")) {
+                err("All fields required");
+                return;
+            }
+
+            data.push({
+                id: val("id"),
+                name: val("name"),
+                category: val("category"),
+                price: +val("price"),
+                stock: +val("stock")
+            });
+
+            display(data);
+            msg("Product added");
+
+        }
+
+        function update() {
+
+            let p = data.find(x => x.id == val("id"));
+
+            if (!p) {
+                err("Product not found");
+                return;
+            }
+
+            p.price = +val("price");
+            p.stock = +val("stock");
+
+            display(data);
+            msg("Product updated");
+
+        }
+
+        function del() {
+
+            let i = data.findIndex(x => x.id == val("id"));
+
+            if (i == -1) {
+                err("Product not found");
+                return;
+            }
+
+            data.splice(i, 1);
+            display(data);
+            msg("Deleted");
+
+        }
+
+        function search() {
+
+            let cat = val("searchCat").toLowerCase();
+
+            let res = data.filter(p => p.category.toLowerCase() == cat);
+
+            if (res.length == 0) err("No products found");
+            else msg("Filtered");
+
+            display(res);
+
+        }
+
+        function val(id) {
+            return document.getElementById(id).value;
+        }
+
+        function msg(t) {
+            document.getElementById("msg").innerText = t;
+            document.getElementById("error").innerText = "";
+        }
+
+        function err(t) {
+            document.getElementById("error").innerText = t;
+            document.getElementById("msg").innerText = "";
+        }
+    </script>
+
+</body>
+
+</html>
