@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Record System</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Segoe UI;
+            background: #e0e5ec;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: #e0e5ec;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 8px 8px 15px #a3b1c6, -8px -8px 15px #ffffff;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            padding: 12px;
+            margin: 6px;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+            background: #e0e5ec;
+            box-shadow: inset 4px 4px 8px #a3b1c6, inset -4px -4px 8px #ffffff;
+            width: 22%;
+        }
+        
+        button {
+            padding: 10px 16px;
+            margin: 6px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .read {
+            background: #6c5ce7;
+        }
+        
+        .create {
+            background: #00b894;
+        }
+        
+        .update {
+            background: #fdcb6e;
+            color: black;
+        }
+        
+        .delete {
+            background: #d63031;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th {
+            background: #6c5ce7;
+            color: white;
+            padding: 12px;
+        }
+        
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .msg {
+            color: green;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Student Record System</h1>
+
+        <div class="card">
+
+            <input id="id" placeholder="Student ID">
+            <input id="name" placeholder="Name">
+            <input id="course" placeholder="Course">
+            <input id="marks" placeholder="Marks">
+
+            <br>
+
+            <button class="read" onclick="loadStudents()">Read</button>
+            <button class="create" onclick="addStudent()">Create</button>
+            <button class="update" onclick="updateStudent()">Update</button>
+            <button class="delete" onclick="deleteStudent()">Delete</button>
+
+            <p id="msg" class="msg"></p>
+            <p id="error" class="error"></p>
+
+        </div>
+
+        <div class="card">
+
+            <table id="table">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Course</th>
+                    <th>Marks</th>
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script>
+        let data = [];
+
+        function loadStudents() {
+
+            fetch("students.json")
+                .then(res => res.json())
+                .then(json => {
+                    data = json.students;
+                    display();
+                    msg("Students loaded");
+                })
+                .catch(() => err("JSON parsing / loading error"));
+
+        }
+
+        function display() {
+
+            let table = document.getElementById("table");
+
+            table.innerHTML = `
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Course</th>
+<th>Marks</th>
+</tr>
+`;
+
+            data.forEach(s => {
+
+                let row = table.insertRow();
+
+                row.insertCell(0).innerText = s.id;
+                row.insertCell(1).innerText = s.name;
+                row.insertCell(2).innerText = s.course;
+                row.insertCell(3).innerText = s.marks;
+
+            });
+
+        }
+
+        function addStudent() {
+
+            if (!validate()) return;
+
+            data.push({
+                id: val("id"),
+                name: val("name"),
+                course: val("course"),
+                marks: val("marks")
+            });
+
+            display();
+            msg("Student added");
+
+        }
+
+        function updateStudent() {
+
+            let id = val("id");
+            let found = false;
+
+            data.forEach(s => {
+
+                if (s.id == id) {
+                    s.course = val("course");
+                    s.marks = val("marks");
+                    found = true;
+                }
+
+            });
+
+            found ? msg("Updated") : err("Student not found");
+            display();
+
+        }
+
+        function deleteStudent() {
+
+            let id = val("id");
+            let index = data.findIndex(s => s.id == id);
+
+            if (index > -1) {
+                data.splice(index, 1);
+                msg("Deleted");
+            } else err("Student not found");
+
+            display();
+
+        }
+
+        function validate() {
+
+            if (!val("id") || !val("name") || !val("course") || !val("marks")) {
+                err("All fields required");
+                return false;
+            }
+
+            return true;
+
+        }
+
+        function val(id) {
+            return document.getElementById(id).value;
+        }
+
+        function msg(t) {
+            document.getElementById("msg").innerText = t;
+            document.getElementById("error").innerText = "";
+        }
+
+        function err(t) {
+            document.getElementById("error").innerText = t;
+            document.getElementById("msg").innerText = "";
+        }
+    </script>
+
+</body>
+
+</html>
