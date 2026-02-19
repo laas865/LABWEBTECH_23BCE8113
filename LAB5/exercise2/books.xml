@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library>
+
+    <book>
+        <id>1</id>
+        <title>Data Structures</title>
+        <author>Mark Allen</author>
+        <status>Available</status>
+    </book>
+
+    <book>
+        <id>2</id>
+        <title>Operating Systems</title>
+        <author>Galvin</author>
+        <status>Issued</status>
+    </book>
+
+    <book>
+        <id>3</id>
+        <title>Computer Networks</title>
+        <author>Tanenbaum</author>
+        <status>Available</status>
+    </book>
+
+</library>
