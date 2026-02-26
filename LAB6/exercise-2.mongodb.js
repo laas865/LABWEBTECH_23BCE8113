@@ -40,7 +40,8 @@ db.getCollection("domestic_animals").find({life_span:15})
 // Q9 
 db.getCollection("wild_animals").find({care_taker_name:"Ravi"})
 
-// Q10 Display animal name, favorite foods and expenses where lifespan > 5
+// Q10 
 db.getCollection("wild_animals").find({life_span:{$gt:5}},{animal_name:1,favorite_foods:1,expenses:1,_id:0})
 
 db.getCollection("domestic_animals").find({life_span:{$gt:5}},{animal_name:1,favorite_foods:1,expenses:1,_id:0})
+
