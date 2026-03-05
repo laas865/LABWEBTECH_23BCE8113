@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Book Finder</title>
+</head>
+<body>
+
+<h2>Search Book by Title</h2>
+<input type="text" id="searchTitle">
+<button onclick="searchBook()">Search</button>
+
+<h2>Filter by Category</h2>
+<input type="text" id="category">
+<button onclick="filterCategory()">Filter</button>
+
+<h2>Sort</h2>
+<button onclick="sortPrice()">Sort by Price</button>
+<button onclick="sortRating()">Sort by Rating</button>
+
+<h2>Top Rated Books</h2>
+<button onclick="topBooks()">Show Top Rated</button>
+
+<h2>Pagination</h2>
+<button onclick="loadPage(1)">Page 1</button>
+<button onclick="loadPage(2)">Page 2</button>
+
+<h2>Results</h2>
+<div id="results"></div>
+
+<script>
+
+function displayBooks(books) {
+    let output = "";
+    books.forEach(book => {
+        output += `
+            <div style="border:1px solid black; margin:10px; padding:10px;">
+                <h3>${book.title}</h3>
+                <p>Author: ${book.author}</p>
+                <p>Category: ${book.category}</p>
+                <p>Price: ₹${book.price}</p>
+                <p>Rating: ${book.rating}</p>
+                <p>Year: ${book.year}</p>
+            </div>
+        `;
+    });
+    document.getElementById("results").innerHTML = output;
+}
+
+async function searchBook() {
+    const title = document.getElementById("searchTitle").value;
+    const res = await fetch(`/books/search?title=${title}`);
+    const data = await res.json();
+    displayBooks(data);
+}
+
+async function filterCategory() {
+    const category = document.getElementById("category").value;
+    const res = await fetch(`/books/category/${category}`);
+    const data = await res.json();
+    displayBooks(data);
+}
+
+async function sortPrice() {
+    const res = await fetch("/books/sort/price");
+    const data = await res.json();
+    displayBooks(data);
+}
+
+async function sortRating() {
+    const res = await fetch("/books/sort/rating");
+    const data = await res.json();
+    displayBooks(data);
+}
+
+async function topBooks() {
+    const res = await fetch("/books/top");
+    const data = await res.json();
+    displayBooks(data);
+}
+
+async function loadPage(page) {
+    const res = await fetch(`/books?page=${page}`);
+    const data = await res.json();
+    displayBooks(data);
+}
+
+</script>
+
+</body>
+</html>
