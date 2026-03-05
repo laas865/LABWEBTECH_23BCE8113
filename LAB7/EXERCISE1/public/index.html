@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Notes Manager</title>
+</head>
+<body>
+
+<h2>Add Note</h2>
+
+<input type="text" id="title" placeholder="Title"><br><br>
+<input type="text" id="subject" placeholder="Subject"><br><br>
+<textarea id="description" placeholder="Description"></textarea><br><br>
+
+<button onclick="addNote()">Add Note</button>
+
+<h2>All Notes</h2>
+<div id="notes"></div>
+
+<script>
+
+async function addNote() {
+    const note = {
+        title: document.getElementById("title").value,
+        subject: document.getElementById("subject").value,
+        description: document.getElementById("description").value
+    };
+
+    await fetch("/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(note)
+    });
+
+    loadNotes();
+}
+
+async function loadNotes() {
+    const res = await fetch("/notes");
+    const notes = await res.json();
+
+    let output = "";
+    notes.forEach(note => {
+        output += `
+            <div style="border:1px solid black; padding:10px; margin:10px;">
+                <h3>${note.title}</h3>
+                <p><b>Subject:</b> ${note.subject}</p>
+                <p>${note.description}</p>
+                <p><b>Date:</b> ${note.created_date}</p>
+                <button onclick="editNote('${note._id}')">Edit</button>
+                <button onclick="deleteNote('${note._id}')">Delete</button>
+            </div>
+        `;
+    });
+
+    document.getElementById("notes").innerHTML = output;
+}
+
+async function deleteNote(id) {
+    await fetch("/notes/" + id, {
+        method: "DELETE"
+    });
+    loadNotes();
+}
+
+async function editNote(id) {
+    const newTitle = prompt("Enter new title:");
+    const newDescription = prompt("Enter new description:");
+
+    await fetch("/notes/" + id, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            title: newTitle,
+            description: newDescription
+        })
+    });
+
+    loadNotes();
+}
+
+loadNotes();
+
+</script>
+
+</body>
+</html>
